@@ -1,3 +1,5 @@
+# pke1029
+# July 2018
 
 # google drive api library
 from __future__ import print_function
@@ -13,6 +15,7 @@ from time import sleep
 from datetime import datetime
 import os
 import shutil
+import config
 
 
 def capture_image(camera, res):
@@ -96,9 +99,8 @@ def get_folder_id(drive_service, folder_name):
     folder_id = False
     
     query1 = "name='" + folder_name + "'"
-    query2 = "mimeType='application/vnd.google-apps.folder'"
 
-    response = drive_service.files().list(q=query1 and query2,
+    response = drive_service.files().list(q=query1,
                                           fields='nextPageToken, files(id, name)').execute()
     items = response.get('files', [])
     if items:
@@ -155,14 +157,14 @@ def get_folder_list(text_file):
 def main():
     
     # parameters
-    lo_res = (128, 96)      # resolution for motion detect
-    hi_res = (640, 480)     # resolution for video recording
-    frequency = 2           # frequency of motion detect (Hz)
-    fps = 10                # fps for video recording
-    duration = 10           # duration of recording
-    threshold = 25          # difference in each pixel [0, 256]
-    sensitivity = 600       # difference in each frame [0, 128*96]
-    log_day = 5             # how many number day to keep the log of
+    lo_res      = config.lo_res         # resolution for motion detect
+    hi_res      = config.hi_res         # resolution for video recording
+    frequency   = config.frequency      # frequency of motion detect (Hz)
+    fps         = config.fps            # fps for video recording
+    duration    = config.duration       # duration of recording
+    threshold   = config.threshold      # difference in each pixel [0, 256]
+    sensitivity = config.sensitivity    # difference in each frame [0, 128*96]
+    log_day     = config.log_day        # number of days to keep the log of
 
     # authenticate google drive
     print('authenticating...', end='')
@@ -185,10 +187,11 @@ def main():
         motion = motion_detect(camera, lo_res, frequency, threshold, sensitivity)
 
         if motion is True:
-            print(' motion detected')
 
             # get current time
             now = datetime.now()
+            print(' motion detected ' + str(now))
+            
             folder_name = str(now.date())
             file_name = str(now.time()) + '.h264'
 
@@ -205,6 +208,7 @@ def main():
 
             # check if folder on google drive
             folder_id = get_folder_id(drive_service, folder_name)
+            
             # if not, create one
             if folder_id is False:
                 folder_id = create_folder(drive_service, folder_name)
