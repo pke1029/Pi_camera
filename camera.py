@@ -157,6 +157,7 @@ def get_folder_list(text_file):
 def main():
     
     # parameters
+    rotation    = config.rotation       # camera orientation
     lo_res      = config.lo_res         # resolution for motion detect
     hi_res      = config.hi_res         # resolution for video recording
     frequency   = config.frequency      # frequency of motion detect (Hz)
@@ -173,7 +174,7 @@ def main():
     
     # initialize camera
     camera = PiCamera()
-    camera.rotation = 0
+    camera.rotation = rotation
     sleep(5)
 
     # get folder list
@@ -234,7 +235,8 @@ def main():
                 shutil.rmtree(folder_name)
                 # remove from list and text file
                 with open(text_file, 'w') as f:
-                    f.writelines(folder_list)
+                    for folder in folder_list:
+                        f.write(folder + '\n')
                 print(' success')
 
 
